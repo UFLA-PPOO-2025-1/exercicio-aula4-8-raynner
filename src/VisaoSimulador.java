@@ -1,3 +1,4 @@
+import java.awt.Color;
 
 /**
  * Uma visão gráfica da grade de simulação. Esta interface define todos os diferentes

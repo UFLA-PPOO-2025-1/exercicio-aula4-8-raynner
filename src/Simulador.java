@@ -1,6 +1,6 @@
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Um simulador simples de predador-presa, baseado em um campo retangular contendo 
@@ -47,6 +47,18 @@ public class Simulador
             System.out.println("Usando valores padrões.");
             comprimento = COMPRIMENTO_PADRAO;
             largura = LARGURA_PADRAO;
+        // Cria e adiciona a visão textual.
+    VisaoSimulador visao = new VisaoDeGrade(comprimento, largura, this);
+    GeradorDePopulacoes.definirCores(visao);
+    visoes.add(visao);
+
+    visao = new VisaoDeGrafico(800, 400, 500);
+    GeradorDePopulacoes.definirCores(visao);
+    visoes.add(visao);
+
+    // Nova visão textual
+    VisaoSimulador visaoTexto = new VisaoDeTexto();
+    visoes.add(visaoTexto);
         }
         
         animais = new ArrayList<>();
