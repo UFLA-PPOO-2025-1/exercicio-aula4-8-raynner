@@ -1,7 +1,7 @@
 import java.util.List;
 import java.util.Random;
 
-public abstract class Animal {
+public abstract class Animal implements Ator {
 
     // Características compartilhadas por todos os coelhos (atributos estáticos, da classe).
 
@@ -50,8 +50,8 @@ public abstract class Animal {
      * Verifica se o animal está vivo ou não.
      * @return verdadeiro se o animal ainda estiver vivo.
      */
-    public boolean estaVivo()
-    {
+    @Override
+    public boolean estaAtivo() {
         return vivo;
     }
     
@@ -114,19 +114,16 @@ public abstract class Animal {
      * Novos nascimentos serão feitos em locais vizinhos livres.
      * @param novosAnimais Uma lista para retornar os animais recém-nascidos.
      */
-    protected void reproduzir(List<Animal> novosAnimais)
-    {
-        // Novos animais nascem em locais vizinhos.
-        // Obtém uma lista de locais vizinhos livres.
-        List<Localizacao> locaisLivres = obterCampo().localizacoesVizinhasLivres(obterLocalizacao());
-        int nascimentos = procriar();
-        for(int n = 0; n < nascimentos && locaisLivres.size() > 0; n++) {
-            Localizacao local = locaisLivres.remove(0);
-            Animal filhote = criarNovoFilhote(false, obterCampo(), local);
-            novosAnimais.add(filhote);
-        }
+    protected void reproduzir(List<Ator> novosAtores) {
+    // Novos animais nascem em locais vizinhos.
+    List<Localizacao> locaisLivres = obterCampo().localizacoesVizinhasLivres(obterLocalizacao());
+    int nascimentos = procriar();
+    for (int n = 0; n < nascimentos && locaisLivres.size() > 0; n++) {
+        Localizacao local = locaisLivres.remove(0);
+        Animal filhote = criarNovoFilhote(false, obterCampo(), local);
+        novosAtores.add(filhote); // 🔥 Agora adiciona na lista de Ator
     }
-
+}
 
     /**
      * Uma raposa pode procriar se tiver atingido a idade de reprodução.
@@ -136,8 +133,8 @@ public abstract class Animal {
         return obterIdade() >= obterIdadeReproducao();
     }
 
-    
-    public abstract void agir(List<Animal> novosAnimais);
+    @Override
+    public abstract void agir(List<Ator> novosAtores);
 
     protected abstract int obterIdadeMaxima();
     

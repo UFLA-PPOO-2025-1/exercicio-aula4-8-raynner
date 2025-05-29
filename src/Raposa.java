@@ -1,5 +1,5 @@
-import java.util.List;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -65,13 +65,13 @@ public class Raposa extends Animal
      * ou morrer de velhice.
      * @param novasRaposas Uma lista para retornar as raposas recém-nascidas.
      */
-    @Override
-    public void agir(List<Animal> novasRaposas)
+        @Override
+    public void agir(List<Ator> novosAtores)
     {
         incrementarIdade();
         incrementarFome();
-        if(estaVivo()) {
-            reproduzir(novasRaposas);            
+        if(estaAtivo()) {
+            reproduzir(novosAtores);            
             // Move-se em direção a uma fonte de comida, se encontrada.
             Localizacao novaLocalizacao = buscarComida();
             if(novaLocalizacao == null) { 
@@ -115,7 +115,7 @@ public class Raposa extends Animal
 		    Object animal = obterCampo().obterObjetoEm(onde);
 		    if(animal instanceof Coelho) {
 		        Coelho coelho = (Coelho) animal;
-		        if(coelho.estaVivo()) { 
+		        if(coelho.estaAtivo()) { 
 		            coelho.morrer();
 		            nivelComida += VALOR_COMIDA_COELHO;
 		            if (nivelComida > NIVEL_COMIDA_MAXIMO) {
