@@ -121,7 +121,10 @@ public class Simulador
         // Adiciona os animais recém-nascidos às listas principais.
         animais.addAll(novosAnimais);
 
+         
+
         atualizarVisoes();
+
     }
         
     /**

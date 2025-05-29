@@ -55,13 +55,14 @@ public class VisaoDeTexto implements VisaoSimulador
     @Override
     public void mostrarStatus(int passo, Campo campo)
     {
+        estatisticas.invalidarContagens();  // <<-- chama aqui para resetar as contagens antes de contar de novo
+
         int numRaposas = estatisticas.obterContagemPopulacao(campo, Raposa.class);
         int numCoelhos = estatisticas.obterContagemPopulacao(campo, Coelho.class);
 
         System.out.println("Passo " + passo + " - Raposas: " + numRaposas + " Coelhos: " + numCoelhos);
     }
-
-    /**
+        /**
      * Prepara para uma nova execução.
      * Reinicia as estatísticas.
      */
