@@ -1,6 +1,6 @@
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * Um simulador simples de predador-presa, baseado em um campo retangular contendo 
@@ -8,150 +8,163 @@ import java.util.List;
  * 
  * @author David J. Barnes e Michael Kölling
  *  Traduzido por Julio César Alves
- * @version 2025.05.29
+ * @version 2025.05.24
  */
-public class Simulador {
-    // Constantes de configuração do simulador.
+public class Simulador
+{
+    // Constantes que representam informações de configuração para a simulação.
+    // A largura padrão da grade.
     private static final int LARGURA_PADRAO = 120;
+    // O comprimento padrão da grade.
     private static final int COMPRIMENTO_PADRAO = 80;
 
-    // Lista de todos os animais presentes no campo.
-    private List<Animal> listaDeAnimais;
-    // Representação do ambiente da simulação.
-    private Campo ambiente;
-    // Contador de passos da simulação.
-    private int contadorDePassos;
-    // Lista de visualizações da simulação.
-    private List<VisaoSimulador> listaDeVisoes;
-
+    // Lista de animais no campo.
+    private List<Animal> animais;
+    // O estado atual do campo.
+    private Campo campo;
+    // O passo atual da simulação.
+    private int passo;
+    // Visões gráficas da simulação.
+    private List<VisaoSimulador> visoes;
+    
     /**
-     * Construtor que cria um simulador com dimensões padrão.
+     * Constrói um campo de simulação com tamanho padrão.
      */
-    public Simulador() {
+    public Simulador()
+    {
         this(COMPRIMENTO_PADRAO, LARGURA_PADRAO);
     }
-
+    
     /**
-     * Construtor que cria um simulador com dimensões personalizadas.
-     * @param comprimento O comprimento do campo.
-     * @param largura A largura do campo.
+     * Cria um campo de simulação com o tamanho fornecido.
+     * @param comprimento O comprimento do campo. Deve ser maior que zero.
+     * @param largura A largura do campo. Deve ser maior que zero.
      */
-    public Simulador(int comprimento, int largura) {
-        if (largura <= 0 || comprimento <= 0) {
-            System.out.println("As dimensões devem ser maiores que zero.");
-            System.out.println("Utilizando valores padrão.");
+    public Simulador(int comprimento, int largura)
+    {
+        if(largura <= 0 || comprimento <= 0) {
+            System.out.println("As dimensões devem ser >= zero.");
+            System.out.println("Usando valores padrões.");
             comprimento = COMPRIMENTO_PADRAO;
             largura = LARGURA_PADRAO;
         }
+        
+        animais = new ArrayList<>();
+        campo = new Campo(comprimento, largura);
 
-        listaDeAnimais = new ArrayList<>();
-        ambiente = new Campo(comprimento, largura);
-        listaDeVisoes = new ArrayList<>();
+        visoes = new ArrayList<>();
+        
+        VisaoSimulador visao = new VisaoDeGrade(comprimento, largura, this);
+        GeradorDePopulacoes.definirCores(visao);
+        visoes.add(visao);
 
-        // Adiciona visão textual
-        VisaoSimulador visaoTexto = new VisaoDeTexto();
-        listaDeVisoes.add(visaoTexto);
-
-        // Adiciona visão de grade
-        VisaoSimulador visaoGrade = new VisaoDeGrade(comprimento, largura, this);
-        GeradorDePopulacoes.definirCores(visaoGrade);
-        listaDeVisoes.add(visaoGrade);
-
-        // Adiciona visão gráfica
-        VisaoSimulador visaoGrafico = new VisaoDeGrafico(800, 400, 500);
-        GeradorDePopulacoes.definirCores(visaoGrafico);
-        listaDeVisoes.add(visaoGrafico);
-
-        reiniciarSimulacao();
+        visao = new VisaoDeGrafico(800, 400, 500);
+        GeradorDePopulacoes.definirCores(visao);
+        visoes.add(visao);
+        
+        // Configura um ponto de partida válido.
+        reiniciar();
     }
-
+    
     /**
-     * Executa uma simulação longa (4000 passos).
+     * Executa a simulação a partir de seu estado atual por um período razoavelmente longo 
+     * (4000 passos).
      */
-    public void executarSimulacaoLonga() {
-        executarSimulacao(4000, 0);
+    public void executarSimulacaoLonga()
+    {
+        // altere o parâmetro de atraso se quiser executar mais lentamente
+        simular(4000, 0);
     }
-
+    
     /**
-     * Executa a simulação pelo número determinado de passos, 
-     * com um possível atraso entre os passos.
-     * @param totalDePassos Quantidade de passos.
-     * @param atrasoMs Atraso entre passos em milissegundos.
+     * Executa a simulação pelo número fornecido de passos.
+     * Para a simulação antes do número fornecido de passos se ela se tornar inviável.
+     * @param numPassos O número de passos a executar.
      */
-    public void executarSimulacao(int totalDePassos, int atrasoMs) {
-        for (int passoAtual = 1; 
-             passoAtual <= totalDePassos && listaDeVisoes.get(0).ehViavel(ambiente);
-             passoAtual++) {
-            executarUmPasso();
-            if (atrasoMs > 0) {
-                pausarSimulacao(atrasoMs);
+    public void simular(int numPassos, int atraso)
+    {
+        for(int passo = 1; passo <= numPassos && visoes.get(0).ehViavel(campo); passo++) {
+            simularUmPasso();
+            if (atraso > 0) {
+                pausar(atraso);   
             }
         }
-        reabilitarOpcoesDeVisoes();
+        reabilitarOpcoesVisoes();
     }
-
+    
     /**
-     * Executa a simulação por um único passo.
+     * Executa a simulação a partir de seu estado atual por um único passo. 
+     * Itera por todo o campo atualizando o estado de cada raposa e coelho.
      */
-    public void executarUmPasso() {
-        contadorDePassos++;
+    public void simularUmPasso()
+    {
+        passo++;
 
-        List<Animal> novosAnimais = new ArrayList<>();
-
-        for (Iterator<Animal> iterador = listaDeAnimais.iterator(); iterador.hasNext();) {
-            Animal animal = iterador.next();
+        // Fornece espaço para os animais recém-nascidos.
+        List<Animal> novosAnimais = new ArrayList<>(); 
+        // Permite que todos os ns ajam.
+        for(Iterator<Animal> it = animais.iterator(); it.hasNext(); ) {
+            Animal animal = it.next();
             animal.agir(novosAnimais);
-            if (!animal.estaVivo()) {
-                iterador.remove();
+            if(!animal.estaVivo()) {
+                it.remove();
             }
         }
+        
+        // Adiciona os animais recém-nascidos às listas principais.
+        animais.addAll(novosAnimais);
 
-        listaDeAnimais.addAll(novosAnimais);
-        atualizarTodasAsVisoes();
+        atualizarVisoes();
     }
-
+        
     /**
-     * Reinicia a simulação para o estado inicial.
+     * Reinicia a simulação para uma posição inicial.
      */
-    public void reiniciarSimulacao() {
-        contadorDePassos = 0;
-        listaDeAnimais.clear();
-        for (VisaoSimulador visao : listaDeVisoes) {
+    public void reiniciar()
+    {
+        passo = 0;
+        animais.clear();
+        for (VisaoSimulador visao : visoes) {
             visao.reiniciar();
         }
 
-        GeradorDePopulacoes.povoar(ambiente, listaDeAnimais);
-        atualizarTodasAsVisoes();
-        reabilitarOpcoesDeVisoes();
+        GeradorDePopulacoes.povoar(campo, animais);
+        
+        atualizarVisoes();
+        reabilitarOpcoesVisoes();
     }
 
     /**
-     * Atualiza todas as visualizações.
+     * Atualiza todas as visões existentes.
      */
-    private void atualizarTodasAsVisoes() {
-        for (VisaoSimulador visao : listaDeVisoes) {
-            visao.mostrarStatus(contadorDePassos, ambiente);
+    private void atualizarVisoes()
+    {
+        for (VisaoSimulador visao : visoes) {
+            visao.mostrarStatus(passo, campo);
         }
     }
 
     /**
-     * Reabilita as opções nas visualizações.
+     * Reabilita as opções de todas as visões existentes.
      */
-    private void reabilitarOpcoesDeVisoes() {
-        for (VisaoSimulador visao : listaDeVisoes) {
+    private void reabilitarOpcoesVisoes()
+    {
+        for (VisaoSimulador visao : visoes) {
             visao.reabilitarOpcoes();
         }
     }
 
     /**
-     * Pausa a simulação por um tempo definido.
-     * @param milissegundos Tempo de pausa em milissegundos.
+     * Pausa por um tempo fornecido.
+     * @param milissegundos O tempo para pausar, em milissegundos.
      */
-    private void pausarSimulacao(int milissegundos) {
+    private void pausar(int milissegundos)
+    {
         try {
             Thread.sleep(milissegundos);
-        } catch (InterruptedException e) {
-            // Interrupção ignorada.
+        }
+        catch (InterruptedException ie) {
+            // acorda
         }
     }
 }

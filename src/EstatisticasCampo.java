@@ -1,101 +1,144 @@
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
- * Mantém as contagens de populações no campo.
+ * Esta classe coleta e fornece alguns dados estatísticos sobre o estado 
+ * de um campo. É flexível: cria e mantém um contador para qualquer classe 
+ * de objeto encontrada no campo.
+ * 
+ * @author David J. Barnes e Michael Kölling
+ *  Traduzido por Julio César Alves
+ * @version 2025.05.24
  */
-public class EstatisticasCampo {
-    private Map<String, Contador> contadores;
-    private boolean contagemValida;
+public class EstatisticasCampo
+{
+    // Contadores para cada tipo de entidade (raposa, coelho, etc.) na simulação.
+    private HashMap<Class<?>, Contador> contadores;
+    // Indica se os contadores estão atualmente atualizados.
+    private boolean contagensValidas;
 
     /**
-     * Cria o objeto de estatísticas.
+     * Constrói um objeto EstatisticasCampo.
      */
-    public EstatisticasCampo() {
+    public EstatisticasCampo()
+    {
+        // Configura uma coleção de contadores para cada tipo de animal que
+        // possa ser encontrado.
         contadores = new HashMap<>();
-        contagemValida = true;
+        contagensValidas = true;
     }
 
     /**
-     * Zera todas as contagens.
+     * Retorna detalhes sobre o que está no campo.
+     * @return Uma string descrevendo o que está no campo.
      */
-    public void zerar() {
-        contagemValida = false;
-        for (Contador contador : contadores.values()) {
-            contador.zerar();
+    public String obterDetalhesPopulacao(Campo campo)
+    {
+        StringBuffer buffer = new StringBuffer();
+        if(!contagensValidas) {
+            gerarContagens(campo);
+        }
+        for(Class<?> chave : contadores.keySet()) {
+            Contador info = contadores.get(chave);
+            buffer.append(info.obterNome());
+            buffer.append(": ");
+            buffer.append(info.obterContagem());
+            buffer.append(' ');
+        }
+        return buffer.toString();
+    }
+
+
+    
+    /**
+     * Obtém o número de indivíduos na população de uma determinada classe
+     * @return  Um inteiro com o número para a classe passada.
+     */
+    public int obterContagemPopulacao(Campo campo, Class<?> key)
+    {
+        if(!contagensValidas) {
+            gerarContagens(campo);
+        }
+
+        Contador contador = contadores.get(key);
+        return contador.obterContagem();
+    }
+    
+    /**
+     * Invalida o conjunto atual de estatísticas; redefine todas 
+     * as contagens para zero.
+     */
+    public void reiniciar()
+    {
+        contagensValidas = false;
+        for(Class<?> chave : contadores.keySet()) {
+            Contador contador = contadores.get(chave);
+            contador.reiniciar();
         }
     }
 
     /**
      * Incrementa a contagem para uma classe de animal.
+     * @param classeAnimal A classe do animal a ser incrementada.
      */
-    public void incrementarContagem(String nomeClasse) {
-        Contador contador = contadores.get(nomeClasse);
-        if (contador == null) {
-            contador = new Contador(nomeClasse);
-            contadores.put(nomeClasse, contador);
+    public void incrementarContagem(Class<?> classeAnimal)
+    {
+        Contador contador = contadores.get(classeAnimal);
+        if(contador == null) {
+            // Ainda não há um contador para esta espécie.
+            // Cria um.
+            contador = new Contador(classeAnimal.getName());
+            contadores.put(classeAnimal, contador);
         }
         contador.incrementar();
     }
 
     /**
-     * Calcula as contagens de animais no campo.
+     * Indica que a contagem de animais foi concluída.
      */
-    public void gerarContagem(Campo campo) {
-        zerar();
-        for (Object animal : campo) {
-            if (animal != null) {
-                incrementarContagem(animal.getClass().getSimpleName());
+    public void finalizarContagem()
+    {
+        contagensValidas = true;
+    }
+
+    /**
+     * Determina se a simulação ainda é viável.
+     * Ou seja, se deve continuar a ser executada.
+     * @return true Se houver mais de uma espécie viva.
+     */
+    public boolean ehViavel(Campo campo)
+    {
+        // Quantas contagens são diferentes de zero.
+        int naoZero = 0;
+        if(!contagensValidas) {
+            gerarContagens(campo);
+        }
+        for(Class<?> chave : contadores.keySet()) {
+            Contador info = contadores.get(chave);
+            if(info.obterContagem() > 0) {
+                naoZero++;
             }
         }
-        contagemValida = true;
+        return naoZero > 1;
     }
-
+    
     /**
-     * Retorna uma string formatada das contagens.
+     * Gera contagens do número de raposas e coelhos.
+     * Essas contagens não são mantidas atualizadas à medida que raposas e coelhos
+     * são colocados no campo, mas apenas quando uma solicitação
+     * é feita para obter as informações.
+     * @param campo O campo para o qual gerar as estatísticas.
      */
-    public String obterDetalhes(Campo campo) {
-        StringBuilder buffer = new StringBuilder();
-        if (!contagemValida) {
-            gerarContagem(campo);
-        }
-        for (Contador contador : contadores.values()) {
-            buffer.append(contador.obterNome());
-            buffer.append(": ");
-            buffer.append(contador.obterContagem());
-            buffer.append(' ');
-        }
-        return buffer.toString().trim();
-    }
-
-    /**
-     * Retorna as contagens como um Map.
-     */
-    public Map<String, Integer> obterContagem(Campo campo) {
-        if (!contagemValida) {
-            gerarContagem(campo);
-        }
-        Map<String, Integer> mapaContagem = new HashMap<>();
-        for (Contador contador : contadores.values()) {
-            mapaContagem.put(contador.obterNome(), contador.obterContagem());
-        }
-        return mapaContagem;
-    }
-
-    /**
-     * Verifica se a simulação ainda é viável (mais de uma espécie).
-     */
-    public boolean ehViavel(Campo campo) {
-        if (!contagemValida) {
-            gerarContagem(campo);
-        }
-        int contadorNaoZero = 0;
-        for (Contador contador : contadores.values()) {
-            if (contador.obterContagem() > 0) {
-                contadorNaoZero++;
+    private void gerarContagens(Campo campo)
+    {
+        reiniciar();
+        for(int linha = 0; linha < campo.obterComprimento(); linha++) {
+            for(int coluna = 0; coluna < campo.obterLargura(); coluna++) {
+                Object animal = campo.obterObjetoEm(linha, coluna);
+                if(animal != null) {
+                    incrementarContagem(animal.getClass());
+                }
             }
         }
-        return contadorNaoZero > 1;
+        contagensValidas = true;
     }
 }
