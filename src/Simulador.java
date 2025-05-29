@@ -40,43 +40,38 @@ public class Simulador
      * @param comprimento O comprimento do campo. Deve ser maior que zero.
      * @param largura A largura do campo. Deve ser maior que zero.
      */
-    public Simulador(int comprimento, int largura)
-    {
-        if(largura <= 0 || comprimento <= 0) {
-            System.out.println("As dimensões devem ser >= zero.");
-            System.out.println("Usando valores padrões.");
-            comprimento = COMPRIMENTO_PADRAO;
-            largura = LARGURA_PADRAO;
-        // Cria e adiciona a visão textual.
-    VisaoSimulador visao = new VisaoDeGrade(comprimento, largura, this);
-    GeradorDePopulacoes.definirCores(visao);
-    visoes.add(visao);
+    public Simulador(int comprimento, int largura) {
+    // Ajusta parâmetros inválidos
+    if (largura <= 0 || comprimento <= 0) {
+        System.out.println("As dimensões devem ser >= zero.");
+        System.out.println("Usando valores padrões.");
+        comprimento = COMPRIMENTO_PADRAO;
+        largura = LARGURA_PADRAO;
+    }
 
-    visao = new VisaoDeGrafico(800, 400, 500);
-    GeradorDePopulacoes.definirCores(visao);
-    visoes.add(visao);
+    // Inicializa lista de animais e campo
+    animais = new ArrayList<>();
+    campo = new Campo(comprimento, largura);
 
-    // Nova visão textual
+    // Inicializa a lista de visões
+    visoes = new ArrayList<>();
+
+    // Adiciona as visões (importante: lista já está inicializada!)
     VisaoSimulador visaoTexto = new VisaoDeTexto();
     visoes.add(visaoTexto);
-        }
-        
-        animais = new ArrayList<>();
-        campo = new Campo(comprimento, largura);
 
-        visoes = new ArrayList<>();
-        
-        VisaoSimulador visao = new VisaoDeGrade(comprimento, largura, this);
-        GeradorDePopulacoes.definirCores(visao);
-        visoes.add(visao);
+    VisaoSimulador visaoGrade = new VisaoDeGrade(comprimento, largura, this);
+    GeradorDePopulacoes.definirCores(visaoGrade);
+    visoes.add(visaoGrade);
 
-        visao = new VisaoDeGrafico(800, 400, 500);
-        GeradorDePopulacoes.definirCores(visao);
-        visoes.add(visao);
-        
-        // Configura um ponto de partida válido.
-        reiniciar();
-    }
+    VisaoSimulador visaoGrafico = new VisaoDeGrafico(800, 400, 500);
+    GeradorDePopulacoes.definirCores(visaoGrafico);
+    visoes.add(visaoGrafico);
+
+    // Configura um ponto de partida válido.
+    reiniciar();
+}
+
     
     /**
      * Executa a simulação a partir de seu estado atual por um período razoavelmente longo 
@@ -153,6 +148,7 @@ public class Simulador
     {
         for (VisaoSimulador visao : visoes) {
             visao.mostrarStatus(passo, campo);
+        
         }
     }
 
