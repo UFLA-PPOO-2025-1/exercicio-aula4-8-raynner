@@ -1,6 +1,6 @@
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Um simulador simples de predador-presa, baseado em um campo retangular contendo 
@@ -18,8 +18,8 @@ public class Simulador
     // O comprimento padrão da grade.
     private static final int COMPRIMENTO_PADRAO = 80;
 
-    // Lista de animais no campo.
-    private List<Animal> animais;
+    // Lista de atores no campo.
+    private List<Ator> atores;
     // O estado atual do campo.
     private Campo campo;
     // O passo atual da simulação.
@@ -40,31 +40,38 @@ public class Simulador
      * @param comprimento O comprimento do campo. Deve ser maior que zero.
      * @param largura A largura do campo. Deve ser maior que zero.
      */
-    public Simulador(int comprimento, int largura)
-    {
-        if(largura <= 0 || comprimento <= 0) {
-            System.out.println("As dimensões devem ser >= zero.");
-            System.out.println("Usando valores padrões.");
-            comprimento = COMPRIMENTO_PADRAO;
-            largura = LARGURA_PADRAO;
-        }
-        
-        animais = new ArrayList<>();
-        campo = new Campo(comprimento, largura);
-
-        visoes = new ArrayList<>();
-        
-        VisaoSimulador visao = new VisaoDeGrade(comprimento, largura, this);
-        GeradorDePopulacoes.definirCores(visao);
-        visoes.add(visao);
-
-        visao = new VisaoDeGrafico(800, 400, 500);
-        GeradorDePopulacoes.definirCores(visao);
-        visoes.add(visao);
-        
-        // Configura um ponto de partida válido.
-        reiniciar();
+    public Simulador(int comprimento, int largura) {
+    // Ajusta parâmetros inválidos
+    if (largura <= 0 || comprimento <= 0) {
+        System.out.println("As dimensões devem ser >= zero.");
+        System.out.println("Usando valores padrões.");
+        comprimento = COMPRIMENTO_PADRAO;
+        largura = LARGURA_PADRAO;
     }
+
+    // Inicializa lista de atores e campo
+    atores = new ArrayList<>();
+    campo = new Campo(comprimento, largura);
+
+    // Inicializa a lista de visões
+    visoes = new ArrayList<>();
+
+    // Adiciona as visões (importante: lista já está inicializada!)
+    VisaoSimulador visaoTexto = new VisaoDeTexto();
+    visoes.add(visaoTexto);
+
+    VisaoSimulador visaoGrade = new VisaoDeGrade(comprimento, largura, this);
+    GeradorDePopulacoes.definirCores(visaoGrade);
+    visoes.add(visaoGrade);
+
+    VisaoSimulador visaoGrafico = new VisaoDeGrafico(800, 400, 500);
+    GeradorDePopulacoes.definirCores(visaoGrafico);
+    visoes.add(visaoGrafico);
+
+    // Configura um ponto de partida válido.
+    reiniciar();
+}
+
     
     /**
      * Executa a simulação a partir de seu estado atual por um período razoavelmente longo 
@@ -94,27 +101,28 @@ public class Simulador
     
     /**
      * Executa a simulação a partir de seu estado atual por um único passo. 
-     * Itera por todo o campo atualizando o estado de cada raposa e coelho.
+     * Itera por todo o campo atualizando o estado de cada ator.
      */
     public void simularUmPasso()
     {
         passo++;
 
-        // Fornece espaço para os animais recém-nascidos.
-        List<Animal> novosAnimais = new ArrayList<>(); 
-        // Permite que todos os ns ajam.
-        for(Iterator<Animal> it = animais.iterator(); it.hasNext(); ) {
-            Animal animal = it.next();
-            animal.agir(novosAnimais);
-            if(!animal.estaVivo()) {
+        // Fornece espaço para os atores recém-nascidos.
+        List<Ator> novosAtores = new ArrayList<>(); 
+        // Permite que todos os atores ajam.
+        for(Iterator<Ator> it = atores.iterator(); it.hasNext(); ) {
+            Ator ator = it.next();
+            ator.agir(novosAtores);
+            if(!ator.estaAtivo()) {
                 it.remove();
             }
         }
         
-        // Adiciona os animais recém-nascidos às listas principais.
-        animais.addAll(novosAnimais);
+        // Adiciona os atores recém-nascidos às listas principais.
+        atores.addAll(novosAtores);
 
         atualizarVisoes();
+
     }
         
     /**
@@ -123,12 +131,12 @@ public class Simulador
     public void reiniciar()
     {
         passo = 0;
-        animais.clear();
+        atores.clear();
         for (VisaoSimulador visao : visoes) {
             visao.reiniciar();
         }
 
-        GeradorDePopulacoes.povoar(campo, animais);
+        GeradorDePopulacoes.povoar(campo, atores);
         
         atualizarVisoes();
         reabilitarOpcoesVisoes();
@@ -141,6 +149,7 @@ public class Simulador
     {
         for (VisaoSimulador visao : visoes) {
             visao.mostrarStatus(passo, campo);
+        
         }
     }
 

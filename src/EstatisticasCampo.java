@@ -67,6 +67,25 @@ public class EstatisticasCampo
      * Invalida o conjunto atual de estatísticas; redefine todas 
      * as contagens para zero.
      */
+
+    /**
+ * Invalida o conjunto atual de estatísticas; redefine todas 
+ * as contagens para zero.
+ */
+/**
+ * Invalida o conjunto atual de estatísticas; redefine todas 
+ * as contagens para zero.
+ */
+    public void invalidarContagens()
+    {
+        contagensValidas = false;
+        for(Contador contador : contadores.values()) {
+            contador.reiniciar();  // corrigido aqui
+        }
+    }
+
+    
+    
     public void reiniciar()
     {
         contagensValidas = false;
