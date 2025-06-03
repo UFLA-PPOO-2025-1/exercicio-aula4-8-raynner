@@ -1,6 +1,6 @@
+import java.awt.Color;
 import java.util.List;
 import java.util.Random;
-import java.awt.Color;
 
 public class GeradorDePopulacoes {
     // A probabilidade de uma raposa ser criada em qualquer posição da grade.
@@ -18,9 +18,9 @@ public class GeradorDePopulacoes {
     }   
 
     /**
-     * Povoa aleatoriamente o campo com animais.
+     * Povoa aleatoriamente o campo com atores (animais).
      */
-    public static void povoar(Campo campo, List<Animal> animais)
+    public static void povoar(Campo campo, List<Ator> atores)
     {
         Random rand = Randomizador.obterRandom();
         campo.limpar();
@@ -29,12 +29,12 @@ public class GeradorDePopulacoes {
                 if(rand.nextDouble() <= PROBABILIDADE_CRIACAO_RAPOSA) {
                     Localizacao localizacao = new Localizacao(linha, coluna);
                     Raposa raposa = new Raposa(true, campo, localizacao);
-                    animais.add(raposa);
+                    atores.add(raposa);
                 }
                 else if(rand.nextDouble() <= PROBABILIDADE_CRIACAO_COELHO) {
                     Localizacao localizacao = new Localizacao(linha, coluna);
                     Coelho coelho = new Coelho(true, campo, localizacao);
-                    animais.add(coelho);
+                    atores.add(coelho);
                 }
                 // caso contrário, deixa a localização vazia.
             }
