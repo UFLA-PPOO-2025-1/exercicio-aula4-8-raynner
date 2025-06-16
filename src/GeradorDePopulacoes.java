@@ -1,42 +1,40 @@
+// src/GeradorDePopulacoes.java
 import java.util.List;
 import java.util.Random;
-import java.awt.Color;
 
 public class GeradorDePopulacoes {
-    // A probabilidade de uma raposa ser criada em qualquer posição da grade.
-    private static final double PROBABILIDADE_CRIACAO_RAPOSA = 0.02;
-    // A probabilidade de um coelho ser criado em qualquer posição.
-    private static final double PROBABILIDADE_CRIACAO_COELHO = 0.08; 
+    private Campo campo;
+    private static final double PROB_COELHO = 0.08;
+    private static final double PROB_RAPOSA = 0.02;
+    private static final int NUM_CACADORES = 2;
+    private static final Random rand = Randomizador.obterRandom();
 
-    /**
-     * Define as cores de cada espécie de animal nas visões do simulador
-     * @param visao
-     */
-    public static void definirCores(VisaoSimulador visao) {
-        visao.definirCor(Coelho.class, Color.ORANGE);
-        visao.definirCor(Raposa.class, Color.BLUE);
-    }   
+    public GeradorDePopulacoes(Campo campo) {
+        this.campo = campo;
+    }
 
-    /**
-     * Povoa aleatoriamente o campo com animais.
-     */
-    public static void povoar(Campo campo, List<Animal> animais)
-    {
-        Random rand = Randomizador.obterRandom();
+    public void povoar(List<Ator> lista) {
         campo.limpar();
-        for(int linha = 0; linha < campo.obterComprimento(); linha++) {
-            for(int coluna = 0; coluna < campo.obterLargura(); coluna++) {
-                if(rand.nextDouble() <= PROBABILIDADE_CRIACAO_RAPOSA) {
-                    Localizacao localizacao = new Localizacao(linha, coluna);
-                    Raposa raposa = new Raposa(true, campo, localizacao);
-                    animais.add(raposa);
+        for (int linha = 0; linha < campo.obterComprimento(); linha++) {
+            for (int coluna = 0; coluna < campo.obterLargura(); coluna++) {
+                if (rand.nextDouble() <= PROB_COELHO) {
+                    Localizacao loc = new Localizacao(linha, coluna);
+                    Coelho coelho = new Coelho(true, campo, loc);
+                    lista.add(coelho);
+                } else if (rand.nextDouble() <= PROB_RAPOSA) {
+                    Localizacao loc = new Localizacao(linha, coluna);
+                    Raposa raposa = new Raposa(true, campo, loc);
+                    lista.add(raposa);
                 }
-                else if(rand.nextDouble() <= PROBABILIDADE_CRIACAO_COELHO) {
-                    Localizacao localizacao = new Localizacao(linha, coluna);
-                    Coelho coelho = new Coelho(true, campo, localizacao);
-                    animais.add(coelho);
-                }
-                // caso contrário, deixa a localização vazia.
+            }
+        }
+
+        // Adiciona caçadores em posições aleatórias
+        for (int i = 0; i < NUM_CACADORES; i++) {
+            Localizacao livre = campo.localLivreAleatoria();
+            if (livre != null) {
+                Cacador c = new Cacador(campo, livre);
+                lista.add(c);
             }
         }
     }
