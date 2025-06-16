@@ -1,4 +1,3 @@
-// src/VisaoDeGrade.java
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -13,6 +12,8 @@ public class VisaoDeGrade implements VisaoSimulador {
     private MapeadorDeCores mapeador;
     private int largura;
     private int altura;
+    private Campo campo; // ✅ ADICIONADO
+
     private static final Color COR_PADRAO = Color.LIGHT_GRAY;
 
     public VisaoDeGrade(int altura, int largura) {
@@ -45,19 +46,26 @@ public class VisaoDeGrade implements VisaoSimulador {
 
     @Override
     public boolean ehViavel(Campo campo) {
-        return true; // Simplificação: você pode usar EstatisticasCampo aqui
+        return true;
     }
 
     @Override
     public void mostrarStatus(int passo, Campo campo) {
+        this.campo = campo; // ✅ SALVO PARA USAR EM desenhar()
         grade.repaint();
         frame.setTitle("Passo: " + passo);
     }
 
+    @Override
+    public void reiniciar() {}
+
+    @Override
+    public void reabilitarOpcoes() {}
+
     private void desenhar(Graphics g) {
         for (int linha = 0; linha < altura; linha++) {
             for (int coluna = 0; coluna < largura; coluna++) {
-                Object objeto = campo.obterObjetoEm(linha, coluna);
+                Object objeto = campo.obterObjetoEm(linha, coluna);  // ✅ AGORA FUNCIONA
                 Color cor = COR_PADRAO;
                 if (objeto != null) {
                     cor = mapeador.obterCor(objeto.getClass());
@@ -68,17 +76,6 @@ public class VisaoDeGrade implements VisaoSimulador {
         }
     }
 
-    @Override
-    public void reiniciar() {
-        // Não faz nada por enquanto
-    }
-
-    @Override
-    public void reabilitarOpcoes() {
-        // Também pode ser ignorado se não for usado
-    }
-
-    // classe interna
     private static class MapeadorDeCores {
         private final Map<Class<?>, Color> mapa = new HashMap<>();
 

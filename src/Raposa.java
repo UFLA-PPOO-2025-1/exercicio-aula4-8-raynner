@@ -1,4 +1,3 @@
-// src/Raposa.java
 import java.util.List;
 
 public class Raposa extends Animal {
@@ -25,11 +24,9 @@ public class Raposa extends Animal {
                 return;
             }
 
-            Campo campo = obterCampo();
             Localizacao destino = encontrarComida();
-
-            if (destino == null && campo != null) {
-                destino = campo.localizacaoVizinhaLivre(obterLocalizacao());
+            if (destino == null) {
+                destino = obterCampo().localizacaoVizinhaLivre(obterLocalizacao());
             }
 
             if (destino != null) {
@@ -45,7 +42,7 @@ public class Raposa extends Animal {
     private Localizacao encontrarComida() {
         List<Localizacao> vizinhos = obterCampo().localizacoesVizinhas(obterLocalizacao());
         for (Localizacao loc : vizinhos) {
-            Object obj = obterCampo().obterObjetoEm(loc);
+            Object obj = obterCampo().getObjeto(loc);  // ✅ CORRIGIDO AQUI
             if (obj instanceof Coelho coelho && coelho.estaAtivo()) {
                 coelho.morrer();
                 comida = VALOR_ALIMENTO_COELHO;

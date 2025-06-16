@@ -1,7 +1,7 @@
 // src/Simulador.java
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
-import java.awt.Color;
 
 public class Simulador {
     private static final int LARGURA_PADRAO = 80;
@@ -44,7 +44,8 @@ public class Simulador {
             ator.agir(novos);
         }
 
-        atores.removeIf(a -> !a.estaAtivo());
+        atores.removeIf(a -> !(a instanceof Cacador) && !a.estaAtivo());
+
         atores.addAll(novos);
 
         visao.mostrarStatus(passo, campo);
